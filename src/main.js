@@ -1,5 +1,7 @@
 define(function(require, exports, module){
 require('game-shim');
+require('dat.gui');
+// only when optimized
 
 var Loader = require('engine/loader'),
     Clock = require('engine/clock').Clock,
@@ -11,105 +13,67 @@ var Loader = require('engine/loader'),
     Mesh = require('engine/gl/mesh').Mesh,
     glcontext = require('engine/gl/context'),
     glm = require('gl-matrix'),
+    ComputeKernel = require('compute').Kernel,
     vec2 = glm.vec2;
-
-var ITERATIONS = 32,
-    MOUSE_FORCE = 10,
-    CURSOR_SIZE = 1000,
-    STEP = 1/60;
 
 var canvas = document.getElementById('c'),
     gl = glcontext.initialize(canvas, {
         context: {
             depth: false
         },
-        //debug: false,
+        debug: false,
         //log_all: true,
         extensions: {
             texture_float: true
         }
     }, function(el, msg, id) { alert(msg); }),
+    options = {
+        iterations: 32,
+        mouse_force: 1,
+        resolution: 0.5,
+        cursor_size: 100,
+        step: 1/60
+    },
+    gui = new dat.GUI(),
     clock = new Clock(canvas),
-    input = new InputHandler(canvas);
+    input = new InputHandler(canvas),
+    loader = new Loader(),
+    resources = loader.resources,
+    shaders = new ShaderManager(gl, resources);
 
 window.gl = gl;
 
-var loader = new Loader(),
-    resources = loader.resources,
-    shaders = new ShaderManager(gl, resources);
-loader.load([
-            'shaders/advect.frag',
-            'shaders/addForce.frag',
-            'shaders/divergence.frag',
-            'shaders/jacobi.frag',
-            'shaders/subtractPressureGradient.frag',
-            'shaders/visualize.frag',
-            'shaders/cursor.vertex',
-            'shaders/boundary.vertex',
-            'shaders/kernel.vertex'
-], init); 
+
+
+function hasFloatLuminanceFBOSupport(){
+    var fbo = new FBO(gl, 32, 32, gl.FLOAT, gl.LUMINANCE);
+    return fbo.supported;
+}
 
 function init(){
-    var onresize;
+    var format = hasFloatLuminanceFBOSupport() ? gl.LUMINANCE : gl.RGB,
+        onresize;
     window.addEventListener('resize', debounce(onresize = function(){
-        var rect = canvas.getBoundingClientRect();
-        console.log(rect.width, rect.height);
-        if(rect.width != canvas.width || rect.height != canvas.height){
+        var rect = canvas.getBoundingClientRect(),
+            width = rect.width * options.resolution,
+            height = rect.height * options.resolution;
+        //console.log(rect.width, rect.height);
+        //if(rect.width != canvas.width || rect.height != canvas.height){
             input.updateOffset();
-            setup(rect.width, rect.height);
-        }
+            setup(width, height, format);
+        //}
     }, 250));
+    gui.add(options, 'iterations', 2, 128).step(2);
+    gui.add(options, 'mouse_force', 1, 20).step(1);
+    gui.add(options, 'cursor_size', 8, 1000).step(1).onFinishChange(onresize);
+    gui.add(options, 'resolution', {'quarter': 0.25, 'half': 0.5, full: 1.0, double: 2.0, quadruple: 4.0}).onFinishChange(onresize);
+    gui.add(options, 'step', {'1/1024': 1/1024, '1/240': 1/240, '1/120': 1/120, '1/60': 1/60, '1/30': 1/30, '1/10': 1/10});
+    gui.close();
     onresize();
     clock.start();
 }
 
-function ComputeKernel(gl, options){
-    this.gl = gl;
-    this.shader = options.shader;
-    this.mesh = options.mesh;
-    this.uniforms = options.uniforms;
-    this.outputFBO = options.output;
-    this.blend = options.blend;
-    this.nobind = options.nobind;
-    this.nounbind = options.nounbind;
-}
-ComputeKernel.prototype.run = function(){
-    if(this.outputFBO && !this.nobind) {
-        this.outputFBO.bind();
-    }
-    var textureUnit = 0, value;
-    for(var name in this.uniforms){
-        if(this.uniforms.hasOwnProperty(name)){
-            value = this.uniforms[name];
-            if(value.bindTexture && !value.bound){
-                value.bindTexture(textureUnit++);
-            }
-        }
-    }
-    this.shader.use();
-    this.shader.uniforms(this.uniforms);
-    if(this.blend === 'add'){
-        this.gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-        this.gl.enable(gl.BLEND);
-    }
-    else {
-        this.gl.disable(gl.BLEND);
-    }
-    this.mesh.draw(this.shader);
-    if(this.outputFBO && !this.nounbind) {
-        this.outputFBO.unbind();
-    }
-    for(name in this.uniforms){
-        if(this.uniforms.hasOwnProperty(name)){
-            value = this.uniforms[name];
-            if(value.bindTexture && value.bound){
-                value.unbindTexture();
-            }
-        }
-    }
-};
-
-function setup(width, height){
+function setup(width, height, singleComponentFboFormat){
     canvas.width = width,
     canvas.height = height;
 
@@ -119,7 +83,7 @@ function setup(width, height){
     var px_x = 1.0/canvas.width,
         px_y = 1.0/canvas.height,
         px = vec2.create([px_x, px_y]);
-        px1 = vec2.create([1, canvas.width/canvas.height]);
+        px1 = vec2.create([1, canvas.width/canvas.height]),
         inside = new Mesh(gl, {
             vertex: geometry.screen_quad(1.0-px_x*2.0, 1.0-px_y*2.0),
             attributes: {
@@ -176,12 +140,12 @@ function setup(width, height){
                     offset: 8
                 }
             }
-        });
+        }),
         velocityFBO0 = new FBO(gl, width, height, gl.FLOAT),
         velocityFBO1 = new FBO(gl, width, height, gl.FLOAT),
-        divergenceFBO = new FBO(gl, width, height, gl.FLOAT, gl.LUMINANCE),
-        pressureFBO0 = new FBO(gl, width, height, gl.FLOAT, gl.LUMINANCE),
-        pressureFBO1 = new FBO(gl, width, height, gl.FLOAT, gl.LUMINANCE),
+        divergenceFBO = new FBO(gl, width, height, gl.FLOAT, singleComponentFboFormat),
+        pressureFBO0 = new FBO(gl, width, height, gl.FLOAT, singleComponentFboFormat),
+        pressureFBO1 = new FBO(gl, width, height, gl.FLOAT, singleComponentFboFormat),
         advectVelocityKernel = new ComputeKernel(gl, {
             shader: shaders.get('kernel', 'advect'),
             mesh: inside,
@@ -191,7 +155,7 @@ function setup(width, height){
                 scale: 1.0,
                 velocity: velocityFBO0,
                 source: velocityFBO0,
-                dt: STEP
+                dt: options.step
             },
             output: velocityFBO1
         }),
@@ -208,7 +172,7 @@ function setup(width, height){
             output: velocityFBO1
         }),
         cursor = new Mesh(gl, {
-            vertex: geometry.screen_quad(px_x*CURSOR_SIZE*2, px_y*CURSOR_SIZE*2),
+            vertex: geometry.screen_quad(px_x*options.cursor_size*2, px_y*options.cursor_size*2),
             attributes: {
                 position: {}
             }
@@ -221,7 +185,7 @@ function setup(width, height){
                 px: px,
                 force: vec2.create([0.5, 0.2]),
                 center: vec2.create([0.1, 0.4]),
-                scale: vec2.create([CURSOR_SIZE*px_x, CURSOR_SIZE*px_y])
+                scale: vec2.create([options.cursor_size*px_x, options.cursor_size*px_y])
             },
             output: velocityFBO1
         }),
@@ -296,47 +260,35 @@ function setup(width, height){
             },
             output: null
         });
-    //advectFBO.bind();
-    //m.draw(advectShader);
-    //advectFBO.unbind();
 
-    //visualizeShader.use();
-    //advectFBO.bindTexture(0);
-    //visualizeShader.uniforms({source: advectFBO});
-    //m.draw(visualizeShader);
     var x0 = input.mouse.x,
         y0 = input.mouse.y;
+
     clock.ontick = function(dt){
-        var x1 = input.mouse.x,
-            y1 = input.mouse.y,
+        var x1 = input.mouse.x * options.resolution,
+            y1 = input.mouse.y * options.resolution,
             xd = x1-x0,
             yd = y1-y0;
         x0 = x1,
         y0 = y1;
         if(x0 === 0 && y0 === 0) xd = yd = 0;
-        //advectVelocityKernel.outputFBO = velocityFBO1;
-        //advectVelocityKernel.uniforms.velocity = velocityFBO0;
-        //advectVelocityKernel.uniforms.source = velocityFBO0;
+        advectVelocityKernel.uniforms.dt = options.step*1.0;
         advectVelocityKernel.run();
 
 
-        vec2.set([xd*px_x*CURSOR_SIZE*MOUSE_FORCE, -yd*px_y*CURSOR_SIZE*MOUSE_FORCE], addForceKernel.uniforms.force);
+        vec2.set([xd*px_x*options.cursor_size*options.mouse_force,
+                 -yd*px_y*options.cursor_size*options.mouse_force], addForceKernel.uniforms.force);
         vec2.set([x0*px_x*2-1.0, (y0*px_y*2-1.0)*-1], addForceKernel.uniforms.center);
         addForceKernel.run();
 
         velocityBoundaryKernel.run();
-
-        //advectVelocityKernel.outputFBO = velocityFBO0;
-        //advectVelocityKernel.uniforms.velocity = velocityFBO1;
-        //advectVelocityKernel.uniforms.source = velocityFBO1;
-        //advectVelocityKernel.run();
 
         divergenceKernel.run();
 
         var p0 = pressureFBO0,
             p1 = pressureFBO1,
             p_ = p0;
-        for(var i = 0; i < ITERATIONS; i++) {
+        for(var i = 0; i < options.iterations; i++) {
             jacobiKernel.uniforms.pressure = pressureBoundaryKernel.uniforms.pressure = p0;
             jacobiKernel.outputFBO = pressureBoundaryKernel.uniforms.outputFBO = p1;
             jacobiKernel.run();
@@ -352,5 +304,17 @@ function setup(width, height){
         drawKernel.run();
     };
 }
+
+loader.load([
+            'shaders/advect.frag',
+            'shaders/addForce.frag',
+            'shaders/divergence.frag',
+            'shaders/jacobi.frag',
+            'shaders/subtractPressureGradient.frag',
+            'shaders/visualize.frag',
+            'shaders/cursor.vertex',
+            'shaders/boundary.vertex',
+            'shaders/kernel.vertex'
+], init); 
 
 });

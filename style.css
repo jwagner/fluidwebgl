@@ -1,0 +1,165 @@
+html, body{
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background-color: black;
+    color: white;
+    font-size: 12px;
+    font-family: Michroma, sans-serif;
+}
+#header {
+    width: 100%;
+    height: 40px;
+    padding: 8px;
+}
+#cc, #video {
+    position: absolute;
+    top: 83px;
+    bottom: 25px;
+    left: 0;
+    right: 0;
+}
+#video {
+    display: none;
+}
+#video iframe {
+    width: 100%;
+    height: 100%;
+}
+#c {
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+}
+
+#header #social {
+    position: absolute;
+    right: 0;
+    top: 32px;
+}
+
+#social > * {
+    vertical-align: top;
+    display: inline;
+}
+#social .fb-like * {
+    vertical-align: top;
+}
+
+#header > *{
+    display: inline-block;
+    vertical-align: baseline;
+    color: #fff;
+    opacity: 0.5;
+}
+
+#header > *:hover {
+    opacity: 1.0;
+}
+#header a, #header a {
+    color: #fff;
+    text-decoration: none;
+}
+
+#header h1 {
+    padding-right: 8px;
+}
+
+#menu {
+    background-color: #333;
+    padding: 4px 0;
+}
+
+#menu > span {
+    padding: 0 8px;
+}
+
+.fullscreen, .generate-world, .show-controls  {
+    cursor: pointer;
+}
+
+#footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 24px;
+    color: white;
+    opacity: 0.5;
+    padding-left: 8px;
+}
+#footer:hover {
+}
+#footer a {
+    color: #ffffff;
+}
+#footer a:hover {
+    text-shadow: white 0 0 5px;
+}
+
+#loading {
+    font-size: 2em;
+    line-height: 2em;
+    padding: 1em;
+}
+#loading .status {
+    font-family: Monospace, mono-space;
+    letter-spacing: 0.3em;
+}
+
+
+#debug {
+    z-index: 200;
+    position: absolute;
+    right: 50px;
+    top: 50px;
+    width: 200px;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: none;
+}
+
+#perfhub {
+    display: none;
+    position: absolute;
+    z-index: 300;
+    top: 82px;
+    right: 0px;
+    background-color: black;
+}
+
+canvas:-webkit-full-screen {
+    width: 100% !important;
+    height: 100% !important;
+}
+canvas:-moz-full-screen {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+#controls {
+    position: absolute;
+    left: 50%;
+    padding: 8px;
+    margin-left: -256px;
+    width: 512px;
+    z-index:2;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    box-shadow: 0 0 2px 2px rgba(0, 0, 0, 0.2);
+    border: 2px solid rgba(0, 0, 0, 0.6);
+    font-size: 14px;
+}
+.key {
+    border-radius: 4px;
+    min-width: 24px;
+    display: inline-block;
+    text-align: center;
+    padding: 2px;
+    color: #333;
+    background-color: #fff;
+}
+body .dg.ac {
+    top: 60px;
+}
