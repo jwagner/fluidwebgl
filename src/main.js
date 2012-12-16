@@ -26,7 +26,9 @@ var canvas = document.getElementById('c'),
         extensions: {
             texture_float: true
         }
-    }, function(el, msg, id) { alert(msg); }),
+    }, function(el, msg, id) {
+        document.getElementById('video').style.display = 'block';
+    }),
     options = {
         iterations: 32,
         mouse_force: 1,
@@ -42,7 +44,6 @@ var canvas = document.getElementById('c'),
     shaders = new ShaderManager(gl, resources);
 
 window.gl = gl;
-
 
 
 function hasFloatLuminanceFBOSupport(){
@@ -64,7 +65,7 @@ function init(){
         //}
     }, 250));
     gui.add(options, 'iterations', 2, 128).step(2);
-    gui.add(options, 'mouse_force', 1, 20).step(1);
+    gui.add(options, 'mouse_force', 1, 100).step(1);
     gui.add(options, 'cursor_size', 8, 1000).step(1).onFinishChange(onresize);
     gui.add(options, 'resolution', {'quarter': 0.25, 'half': 0.5, full: 1.0, double: 2.0, quadruple: 4.0}).onFinishChange(onresize);
     gui.add(options, 'step', {'1/1024': 1/1024, '1/240': 1/240, '1/120': 1/120, '1/60': 1/60, '1/30': 1/30, '1/10': 1/10});
@@ -305,6 +306,7 @@ function setup(width, height, singleComponentFboFormat){
     };
 }
 
+if(gl)
 loader.load([
             'shaders/advect.frag',
             'shaders/addForce.frag',

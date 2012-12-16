@@ -163,3 +163,6 @@ canvas:-moz-full-screen {
 body .dg.ac {
     top: 60px;
 }
+a {
+    color: #f00;
+}
