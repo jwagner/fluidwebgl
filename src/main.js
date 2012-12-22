@@ -201,6 +201,9 @@ function setup(width, height, singleComponentFboFormat){
         }),
         jacobiKernel = new ComputeKernel(gl, {
             shader: shaders.get('kernel', 'jacobi'),
+            // use all so the simulation still works
+            // even if the pressure boundary is not
+            // properly enforced
             mesh: all,
             nounbind: true,
             uniforms: {
@@ -270,6 +273,7 @@ function setup(width, height, singleComponentFboFormat){
             y1 = input.mouse.y * options.resolution,
             xd = x1-x0,
             yd = y1-y0;
+
         x0 = x1,
         y0 = y1;
         if(x0 === 0 && y0 === 0) xd = yd = 0;
@@ -291,7 +295,7 @@ function setup(width, height, singleComponentFboFormat){
             p_ = p0;
         for(var i = 0; i < options.iterations; i++) {
             jacobiKernel.uniforms.pressure = pressureBoundaryKernel.uniforms.pressure = p0;
-            jacobiKernel.outputFBO = pressureBoundaryKernel.uniforms.outputFBO = p1;
+            jacobiKernel.outputFBO = pressureBoundaryKernel.outputFBO = p1;
             jacobiKernel.run();
             pressureBoundaryKernel.run();
             p_ = p0;
