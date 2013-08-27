@@ -26,9 +26,7 @@ var canvas = document.getElementById('c'),
         extensions: {
             texture_float: true
         }
-    }, function(el, msg, id) {
-        document.getElementById('video').style.display = 'block';
-    }),
+    }, fail),
     options = {
         iterations: 32,
         mouse_force: 1,
@@ -45,6 +43,9 @@ var canvas = document.getElementById('c'),
 
 window.gl = gl;
 
+function fail(el, msg, id) {
+    document.getElementById('video').style.display = 'block';
+}
 
 function hasFloatLuminanceFBOSupport(){
     var fbo = new FBO(gl, 32, 32, gl.FLOAT, gl.LUMINANCE);
@@ -52,7 +53,9 @@ function hasFloatLuminanceFBOSupport(){
 }
 
 function init(){
-    var format = hasFloatLuminanceFBOSupport() ? gl.LUMINANCE : gl.RGB,
+    // just load it when it's there. If it's not there it's hopefully not needed.
+    gl.getExtension('OES_texture_float_linear');
+    var format = hasFloatLuminanceFBOSupport() ? gl.LUMINANCE : gl.RGBA,
         onresize;
     window.addEventListener('resize', debounce(onresize = function(){
         var rect = canvas.getBoundingClientRect(),
@@ -307,6 +310,7 @@ function setup(width, height, singleComponentFboFormat){
         subtractPressureGradientBoundaryKernel.run();
 
         drawKernel.run();
+
     };
 }
 
