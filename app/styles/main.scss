@@ -1,5 +1,13 @@
 $icon-font-path: '../fonts/';
 
+#c {
+    width: 100vw;
+    height: 100vh;
+}
+.layer {
+    position: absolute;
+}
+
 // bower:scss
 @import "bower_components/bootstrap-sass-official/assets/stylesheets/_bootstrap.scss";
 // endbower

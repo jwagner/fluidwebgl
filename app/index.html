@@ -20,72 +20,54 @@
     <link rel="stylesheet" href="styles/main.css">
     <!-- endbuild -->
 
-    <link rel="stylesheet" href="style.css" />
-
     <!-- build:js scripts/vendor/modernizr.js -->
     <script src="/bower_components/modernizr/modernizr.js"></script>
     <!-- endbuild -->
+
+    <script src="shaders/vertex.vert" type="x-shader/x-vertex" id="vertex"></script>
+    <script src="shaders/fragment.frag" type="x-shader/x-fragment" id="fragment"></script>
+
   </head>
   <body>
     <!--[if lt IE 10]>
         <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
 
-    <div class="container">
-
-      <div id="header">
-        <h1><a href="http://29a.ch/">29a.ch</a></h1>
-        <p><a href="http://29a.ch/2012/12/16/webgl-fluid-simulation">More about this experiment</a></p>&nbsp;&nbsp;&nbsp;
-        <p><a href="http://29a.ch/experiments/">More Experiments &amp; Toys</a></p>
-        <div id="social">
-          <a href="http://twitter.com/share" class="twitter-share-button"
-             data-count="horizontal" data-via="29a_ch">Tweet</a>
-          <div class="fb-like" data-send="true" data-layout=button_count data-width="90" data-show-faces="true" data-font="arial" data-colorscheme="dark"></div>
-          <div class="g-plusone" data-size="medium"
-               data-href="http://29a.ch/sandbox/2012/voxelworld/" data-count="true"></div>
-        </div>
-      </div>
-      <div id="cc">
-        <canvas id="c" width="1280" height="720"></canvas>
-      </div>
-      <div id="video">
-        <p>Your system does not support WebGL which is required for this demo. You can try to
-          <a href="http://get.webgl.org/">get WebGL</a> to work or try out the older, more simple,
-          <a href="http://29a.ch/sandbox/2012/fluidcanvas/">canvas version</a> of this demo.
-      </div>
-      <div id="footer">
-        An experiment by <a href="https://plus.google.com/107896782168573495211?rel=author" rel="author">Jonas Wagner</a></p>
-</div>
-<script data-main=src/main src=lib/require.js></script>
+    <div class="fluid-container">
+      <div class="layer"><canvas id="c" width="100" height="100"></canvas></div>
+      <div id="draw" class="layer"></div>
+    </div>
 
 
+    <!-- build:js scripts/vendor.js -->
+    <!-- bower:js -->
+    <script src="/bower_components/jquery/dist/jquery.js"></script>
+    <script src="/bower_components/fetch/fetch.js"></script>
+    <script src="/bower_components/es6-promise/promise.js"></script>
+    <script src="/bower_components/sketch.js/js/sketch.js"></script>
+    <!-- endbower -->
+    <!-- endbuild -->
 
-</div>
+    <!-- build:js scripts/plugins.js -->
+    <script src="/bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/affix.js"></script>
+    <script src="/bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/alert.js"></script>
+    <script src="/bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/dropdown.js"></script>
+    <script src="/bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/tooltip.js"></script>
+    <script src="/bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/modal.js"></script>
+    <script src="/bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/transition.js"></script>
+    <script src="/bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/button.js"></script>
+    <script src="/bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/popover.js"></script>
+    <script src="/bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/carousel.js"></script>
+    <script src="/bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/scrollspy.js"></script>
+    <script src="/bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/collapse.js"></script>
+    <script src="/bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/tab.js"></script>
+    <!-- endbuild -->
 
+    <!-- build:js scripts/main.js -->
+    <script src="scripts/webgl-utils.js"></script>
+    <script src="scripts/main.js"></script>
+    <script src="scripts/draw.js"></script>
+    <!-- endbuild -->
 
-<!-- build:js scripts/vendor.js -->
-<!-- bower:js -->
-<script src="/bower_components/jquery/dist/jquery.js"></script>
-<!-- endbower -->
-<!-- endbuild -->
-
-<!-- build:js scripts/plugins.js -->
-<script src="/bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/affix.js"></script>
-<script src="/bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/alert.js"></script>
-<script src="/bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/dropdown.js"></script>
-<script src="/bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/tooltip.js"></script>
-<script src="/bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/modal.js"></script>
-<script src="/bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/transition.js"></script>
-<script src="/bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/button.js"></script>
-<script src="/bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/popover.js"></script>
-<script src="/bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/carousel.js"></script>
-<script src="/bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/scrollspy.js"></script>
-<script src="/bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/collapse.js"></script>
-<script src="/bower_components/bootstrap-sass-official/assets/javascripts/bootstrap/tab.js"></script>
-<!-- endbuild -->
-
-<!-- build:js scripts/main.js -->
-<script src="scripts/main.js"></script>
-<!-- endbuild -->
-</body>
+  </body>
 </html>
