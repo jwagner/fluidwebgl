@@ -7,6 +7,9 @@ $icon-font-path: '../fonts/';
 .layer {
     position: absolute;
 }
+#draw {
+    opacity: 0.9;
+}
 
 // bower:scss
 @import "bower_components/bootstrap-sass-official/assets/stylesheets/_bootstrap.scss";
