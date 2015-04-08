@@ -62,12 +62,19 @@ Promise.all([vertexSource, fragmentSource])
             // Set the parameters so we can render any size image.
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
             // add the texture to the array of textures.
             textures.push(texture);
         }
+
+        // lookup the sampler locations.
+        var u_image0Location = gl.getUniformLocation(program, "u_image0");
+        var u_image1Location = gl.getUniformLocation(program, "u_image1");
+        // set which texture units to render with.
+        gl.uniform1i(u_image0Location, 0);  // texture unit 0
+        gl.uniform1i(u_image1Location, 1);  // texture unit 1
 
         console.log(textures);
 
@@ -97,14 +104,15 @@ Promise.all([vertexSource, fragmentSource])
             x1, y2,
             x2, y1,
             x2, y2]), gl.STATIC_DRAW);
+        var drawing = document.getElementById('draw').getElementsByTagName('canvas')[0];
+        var ctx2d = drawing.getContext('2d');
 
         function render(){
             // Upload the image into the texture.
-            var drawing = document.getElementById('draw').getElementsByTagName('canvas')[0];
 
             // todo, add u,v images here...
+            // things to upload to textures
             var canvi = [drawing, canvas];
-
 
             for (var ii = 0; ii < 2; ++ii) {
                 gl.activeTexture(gl.TEXTURE0 + ii);
@@ -113,6 +121,7 @@ Promise.all([vertexSource, fragmentSource])
                 // draw rectangle with current texture
                 // todo, combine textures, add u,v
                 gl.drawArrays(gl.TRIANGLES, 0, 6);
+                ctx2d.clear();
             }
 
             // Draw the rectangle.
