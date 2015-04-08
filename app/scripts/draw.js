@@ -7,7 +7,7 @@ Sketch.create({
         console.log( 'setup' );
     },
     update: function() {
-        radius = 2 + abs( sin( this.millis * 0.003 ) * 50 );
+        radius = 2 + abs( sin( this.millis * 0.003 ) * 10 );
     },
     // Event handlers
     keydown: function() {
@@ -22,7 +22,7 @@ Sketch.create({
             touch = this.touches[i];
             this.lineCap = 'round';
             this.lineJoin = 'round';
-            this.fillStyle = this.strokeStyle = COLOURS[ i % COLOURS.length ];
+            this.fillStyle = this.strokeStyle = COLOURS[ Math.floor(Math.random() * COLOURS.length) ];
             this.lineWidth = radius;
             this.beginPath();
             this.moveTo( touch.ox, touch.oy );
