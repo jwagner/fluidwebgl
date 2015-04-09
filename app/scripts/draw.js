@@ -1,13 +1,16 @@
-var COLOURS = [ '#E3EB64', '#A7EBCA', '#FFFFFF', '#D8EBA7', '#868E80' ];
+// var COLOURS = [ '#E3EB64', '#A7EBCA', '#FFFFFF', '#D8EBA7', '#868E80' ];
+var COLOURS = [ '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF'];
 var radius = 0;
 Sketch.create({
     container: document.getElementById('draw'),
     autoclear: false,
+    strokeStyle: 'hsla(200, 50%, 50%, .4)',
+    globalCompositeOperation: 'lighter',
     setup: function() {
         console.log( 'setup' );
     },
     update: function() {
-        radius = 2 + abs( sin( this.millis * 0.003 ) * 10 );
+        radius = 10 ;
     },
     // Event handlers
     keydown: function() {
@@ -30,4 +33,19 @@ Sketch.create({
             this.stroke();
         }
     }
+    // touchmove: function() {
+    //     for ( var i = this.touches.length - 1, touch; i >= 0; i-- ) {
+    //         touch = this.touches[i];
+    //         for (var fraction = 0, l = 1; fraction < l; fraction+=0.1) {
+    //             this.beginPath();
+    //             var dx = (touch.x - touch.ox);
+    //             var dy = (touch.y - touch.oy);
+    //             this.arc(touch.ox + dx*fraction , touch.oy + dy*fraction, 10, 0, TWO_PI );
+    //             this.closePath();
+    //             this.fillStyle = 'hsla(' + 0 + ', 60%, 40%, .35)';
+    //             this.fill();
+    //             this.stroke();
+    //         }
+    //     }
+    // }
 });

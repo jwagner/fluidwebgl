@@ -3,12 +3,17 @@ $icon-font-path: '../fonts/';
 #c {
     width: 100vw;
     height: 100vh;
+    background: rgba(255,100,100, 0.9);
 }
 .layer {
     position: absolute;
+
 }
 #draw {
     opacity: 0.9;
+}
+#draw canvas {
+    /* background: rgba(100, 100, 255, 0.9); */
 }
 
 // bower:scss

@@ -64,6 +64,8 @@ Promise.all([vertexSource, fragmentSource])
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
             // add the texture to the array of textures.
             textures.push(texture);
@@ -107,6 +109,13 @@ Promise.all([vertexSource, fragmentSource])
         var drawing = document.getElementById('draw').getElementsByTagName('canvas')[0];
         var ctx2d = drawing.getContext('2d');
 
+        // At init time. Clear the back buffer.
+        gl.clearColor(1,1,1,1);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
+        // Turn off rendering to alpha
+        gl.colorMask(true, true, true, false);
+
         function render(){
             // Upload the image into the texture.
 
@@ -121,9 +130,8 @@ Promise.all([vertexSource, fragmentSource])
                 // draw rectangle with current texture
                 // todo, combine textures, add u,v
                 gl.drawArrays(gl.TRIANGLES, 0, 6);
-                ctx2d.clear();
+                ctx2d.clearRect(0, 0, drawing.width, drawing.height);
             }
-
             // Draw the rectangle.
             requestAnimationFrame(render);
         }
