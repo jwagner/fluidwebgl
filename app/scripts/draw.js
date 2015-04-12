@@ -9,7 +9,7 @@ Sketch.create({
     autoclear: false,
     fullscreen: false,
     // strokeStyle: 'hsla(200, 50%, 50%, .4)',
-    globalCompositeOperation: 'lighter',
+    globalCompositeOperation: 'over',
     setup: function() {
         console.log( 'setup' );
     },
@@ -42,7 +42,7 @@ Sketch.create({
             touch = this.touches[i];
             this.lineCap = 'round';
             this.lineJoin = 'round';
-            this.fillStyle = this.strokeStyle = COLOURS[ Math.floor(Math.random() * COLOURS.length) ];
+            this.fillStyle = this.strokeStyle = 'red';
             this.lineWidth = radius;
             this.beginPath();
             this.moveTo( touch.ox, touch.oy );

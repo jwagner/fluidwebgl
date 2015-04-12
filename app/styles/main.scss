@@ -12,15 +12,16 @@ $icon-font-path: '../fonts/';
 }
 
 #drawing {
-    /* background: rgba(100, 100, 255, 0.9); */
+    background: rgba(100, 100, 255, 0.9);
     /* display: none; */
 }
 #uv {
-    display: none;
+    /* display: none; */
 }
 
 .layer {
-    position: absolute;
+    /* position: absolute; */
+    width: 30vw;
 }
 #drawingcontainer {
     opacity: 0.9;

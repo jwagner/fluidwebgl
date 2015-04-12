@@ -6,6 +6,7 @@ var uv = document.getElementById('uv');
 var drawing = document.getElementById('drawing');
 var drawingContext = drawing.getContext('2d');
 var textures = [];
+var render;
 
 // do all the messy work
 var gl = setupWebGL(webgl);
@@ -37,6 +38,8 @@ Promise.all([vertexSource, fragmentSource])
         // set this program as the current program
         gl.useProgram(program);
 
+        // non pre-multiplied alpha textures.
+        // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
         // provide texture coordinates for the rectangle.
         // Create a buffer for the position of the rectangle corners.
         // The position is in scale 0,1
@@ -71,7 +74,7 @@ Promise.all([vertexSource, fragmentSource])
             {
                 name: 'webgl',
                 clamping: gl.CLAMP_TO_EDGE,
-                interpolation: gl.LINEAR,
+                interpolation: gl.NEAREST,
                 texture: null,
                 sampler: null,
                 fbo: null,
@@ -82,7 +85,7 @@ Promise.all([vertexSource, fragmentSource])
             {
                 name: 'drawing',
                 clamping: gl.CLAMP_TO_EDGE,
-                interpolation: gl.LINEAR,
+                interpolation: gl.NEAREST,
                 texture: null,
                 sampler: null,
                 fbo: null,
@@ -106,6 +109,8 @@ Promise.all([vertexSource, fragmentSource])
         _.each(textures, function(t, i) {
             // create a new texture
             var texture = gl.createTexture();
+            t.id = gl.TEXTURE0 + i;
+            gl.activeTexture(t.id);
             gl.bindTexture(gl.TEXTURE_2D, texture);
 
             console.log(t, t.clamping, t.interpolation);
@@ -123,7 +128,6 @@ Promise.all([vertexSource, fragmentSource])
             // set which texture units to render with.
             gl.uniform1i(u_imageLocation, i);
             t.sampler = u_imageLocation;
-            t.id = gl.TEXTURE0 + i;
         });
         // show what we have
         console.log(textures);
@@ -137,16 +141,29 @@ Promise.all([vertexSource, fragmentSource])
 
         // // Turn off rendering to alpha
         // gl.colorMask(true, true, true, true);
-        function render(){
+        render = function(){
             // upload all the current textures
             // gl.clear(gl.COLOR_BUFFER_BIT);
 
-            _.each(textures, function(t, i){
-                gl.activeTexture(t.id);
-                gl.bindTexture(gl.TEXTURE_2D, t.texture);
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, t.element);
-            });
+            // console.log('loading texture', t, i);
+            var webglTexture = textures[0];
+            gl.activeTexture(webglTexture.id);
+            gl.bindTexture(gl.TEXTURE_2D, webglTexture.texture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, webglTexture.element);
 
+            var drawingTexture = textures[1];
+            gl.activeTexture(drawingTexture.id);
+            // gl.clear(gl.COLOR_BUFFER_BIT);
+            gl.bindTexture(gl.TEXTURE_2D, drawingTexture.texture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, drawingTexture.element);
+
+            var uvTexture = textures[2];
+            gl.activeTexture(uvTexture.id);
+            // gl.clear(gl.COLOR_BUFFER_BIT);
+            gl.bindTexture(gl.TEXTURE_2D, uvTexture.texture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, uvTexture.element);
+
+            gl.activeTexture(gl.TEXTURE0);
             // draw rectangle with current texture
             gl.drawArrays(gl.TRIANGLES, 0, 6);
             drawingContext.clearRect(0, 0, drawing.width, drawing.height);
