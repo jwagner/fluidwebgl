@@ -16,12 +16,12 @@ $icon-font-path: '../fonts/';
     /* display: none; */
 }
 #uv {
-    /* display: none; */
+    display: none;
 }
 
 .layer {
-    /* position: absolute; */
-    width: 30vw;
+    position: absolute;
+    /* /width: 30vw; */
 }
 #drawingcontainer {
     opacity: 0.9;

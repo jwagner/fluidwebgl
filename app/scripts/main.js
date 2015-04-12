@@ -74,7 +74,7 @@ Promise.all([vertexSource, fragmentSource])
             {
                 name: 'webgl',
                 clamping: gl.CLAMP_TO_EDGE,
-                interpolation: gl.NEAREST,
+                interpolation: gl.LINEAR,
                 texture: null,
                 sampler: null,
                 fbo: null,
@@ -85,7 +85,7 @@ Promise.all([vertexSource, fragmentSource])
             {
                 name: 'drawing',
                 clamping: gl.CLAMP_TO_EDGE,
-                interpolation: gl.NEAREST,
+                interpolation: gl.LINEAR,
                 texture: null,
                 sampler: null,
                 fbo: null,
@@ -110,6 +110,7 @@ Promise.all([vertexSource, fragmentSource])
             // create a new texture
             var texture = gl.createTexture();
             t.id = gl.TEXTURE0 + i;
+            // draw rectangle with current texture
             gl.activeTexture(t.id);
             gl.bindTexture(gl.TEXTURE_2D, texture);
 
@@ -117,6 +118,7 @@ Promise.all([vertexSource, fragmentSource])
             // Set the parameters so we can render any size image.
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, t.clamping);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, t.clamping);
+
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, t.interpolation);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, t.interpolation);
 
@@ -133,39 +135,103 @@ Promise.all([vertexSource, fragmentSource])
         console.log(textures);
 
 
+        var framebuffers = [
+            {
+                name: 'fbo0',
+                clamping: gl.CLAMP_TO_EDGE,
+                interpolation: gl.NEAREST,
+                texture: null,
+                sampler: null,
+                fbo: null,
+                element: webgl,
+                width: webgl.width,
+                height: webgl.height
+            },
+            {
+                name: 'fbo1',
+                clamping: gl.CLAMP_TO_EDGE,
+                interpolation: gl.NEAREST,
+                texture: null,
+                sampler: null,
+                fbo: null,
+                element: webgl,
+                width: webgl.width,
+                height: webgl.height
+            }
+        ]
+
+        // Create a framebuffer
+        _.each(framebuffers, function(t, i){
+            // create a texture to draw on
+            var texture = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+
+            // Set the parameters so we can render any size image.
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, t.clamping);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, t.clamping);
+
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, t.interpolation);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, t.interpolation);
+
+            t.texture = texture;
+
+            // make an empty texture the same size as the webgl context
+            gl.texImage2D(
+                gl.TEXTURE_2D, 0, gl.RGBA, webgl.width, webgl.height, 0,
+                gl.RGBA, gl.UNSIGNED_BYTE, null
+            );
+
+            // lookup the sampler locations.
+            var u_imageLocation = gl.getUniformLocation(program, "u_image" + t.name);
+            // texture unit 0
+            gl.uniform1i(u_imageLocation, i + textures.length);
+            t.id = gl.TEXTURE0 + i + textures.length;
+
+            var fbo = gl.createFramebuffer();
+            t.fbo = fbo;
+            gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+
+            // Attach a texture to it.
+            gl.framebufferTexture2D(
+                gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t.texture, 0
+            );
+
+        });
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
         // At init time. Clear the back buffer.
-        gl.clearColor(1.0, 1.0, 1.0, 0.0);
         gl.clear(gl.COLOR_BUFFER_BIT);
-
 
         // // Turn off rendering to alpha
         // gl.colorMask(true, true, true, true);
+        var i = 0;
         render = function(){
             // upload all the current textures
             // gl.clear(gl.COLOR_BUFFER_BIT);
-
+            i += 1;
+            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers[0].fbo);
+            // console.log(framebuffers[0].fbo);
             // console.log('loading texture', t, i);
             var webglTexture = textures[0];
-            gl.activeTexture(webglTexture.id);
             gl.bindTexture(gl.TEXTURE_2D, webglTexture.texture);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, webglTexture.element);
 
+            // draw webgl texture in fbo0
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+            // switch to drawing buffer
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
             var drawingTexture = textures[1];
-            gl.activeTexture(drawingTexture.id);
-            // gl.clear(gl.COLOR_BUFFER_BIT);
             gl.bindTexture(gl.TEXTURE_2D, drawingTexture.texture);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, drawingTexture.element);
 
             var uvTexture = textures[2];
-            gl.activeTexture(uvTexture.id);
-            // gl.clear(gl.COLOR_BUFFER_BIT);
             gl.bindTexture(gl.TEXTURE_2D, uvTexture.texture);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, uvTexture.element);
 
-            gl.activeTexture(gl.TEXTURE0);
-            // draw rectangle with current texture
             gl.drawArrays(gl.TRIANGLES, 0, 6);
+
             drawingContext.clearRect(0, 0, drawing.width, drawing.height);
             // Draw the rectangle.
             requestAnimationFrame(render);
