@@ -6,6 +6,7 @@ Sketch.create({
     // if you don't pass a container, Sketch wil append the element to the body
     container: document.getElementById('drawingcontainer'),
     autoclear: false,
+    fullscreen: false,
     strokeStyle: 'hsla(200, 50%, 50%, .4)',
     globalCompositeOperation: 'lighter',
     setup: function() {

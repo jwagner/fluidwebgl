@@ -37,28 +37,7 @@ Promise.all([vertexSource, fragmentSource])
         // set this program as the current program
         gl.useProgram(program);
 
-        // look up where the vertex data needs to go.
-        // We're keeping track of 2 locations:
-        // - clipspace { -1, 1 } for the screen
-        // - texture coordinates { 0, 1 } for the texture
-
-        var texCoordLocation = gl.getAttribLocation(program, "a_texCoord");
-        var texCoordBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-        gl.enableVertexAttribArray(texCoordLocation);
-        gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
-        // two triangles in texture space (0,0) -> (1,1)
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-            0.0,  0.0,
-            1.0,  0.0,
-            0.0,  1.0,
-            0.0,  1.0,
-            1.0,  0.0,
-            1.0,  1.0]), gl.STATIC_DRAW);
-
-
         // provide texture coordinates for the rectangle.
-        // TODO: can we use a triangle stripe here?
         // Create a buffer for the position of the rectangle corners.
         var positionLocation = gl.getAttribLocation(program, "a_position");
         var positionBuffer = gl.createBuffer();
@@ -86,6 +65,10 @@ Promise.all([vertexSource, fragmentSource])
         // set the resolution
         gl.uniform2f(resolutionLocation, webgl.width, webgl.height);
 
+        // lookup uniforms
+        var textureSizeLocation = gl.getUniformLocation(program, "u_textureSize");
+        gl.uniform2f(textureSizeLocation, webgl.width, webgl.height);
+
         // create name textures
 
         textures = [
@@ -95,7 +78,10 @@ Promise.all([vertexSource, fragmentSource])
                 interpolation: gl.LINEAR,
                 texture: null,
                 sampler: null,
-                element: webgl
+                fbo: null,
+                element: webgl,
+                width: webgl.width,
+                height: webgl.height
             },
             {
                 name: 'drawing',
@@ -103,7 +89,10 @@ Promise.all([vertexSource, fragmentSource])
                 interpolation: gl.LINEAR,
                 texture: null,
                 sampler: null,
-                element: drawing
+                fbo: null,
+                element: drawing,
+                width: drawing.width,
+                height: drawing.height
             },
             {
                 name: 'uv',
@@ -111,7 +100,10 @@ Promise.all([vertexSource, fragmentSource])
                 interpolation: gl.LINEAR,
                 texture: null,
                 sampler: null,
-                element: uv
+                fbo: null,
+                element: uv,
+                width: uv.width,
+                height: uv.height
             }
         ];
 
@@ -136,6 +128,18 @@ Promise.all([vertexSource, fragmentSource])
             gl.uniform1i(u_imageLocation, i);
             t.sampler = u_imageLocation;
             t.id = gl.TEXTURE0 + i;
+
+            // make a texture the same size as the image
+            gl.texImage2D(
+                gl.TEXTURE_2D, 0, gl.RGBA, t.width, t.height, 0,
+                gl.RGBA, gl.UNSIGNED_BYTE, null);
+            // Create a framebuffer and attach the texture.
+
+            var fbo = gl.createFramebuffer();
+            gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+            t.fbo = fbo;
+
         });
         // show what we have
         console.log(textures);
@@ -147,7 +151,7 @@ Promise.all([vertexSource, fragmentSource])
         gl.clear(gl.COLOR_BUFFER_BIT);
 
         // // Turn off rendering to alpha
-        gl.colorMask(true, true, true, false);
+        // gl.colorMask(true, true, true, false);
 
         function render(){
             // Upload the image into the texture.
@@ -155,17 +159,32 @@ Promise.all([vertexSource, fragmentSource])
             // todo, add u,v images here...
             // things to upload to textures
             _.each(textures, function(t, i){
+
                 gl.activeTexture(t.id);
                 gl.bindTexture(gl.TEXTURE_2D, t.texture);
                 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, t.element);
-                // draw rectangle with current texture
-                // todo, combine textures, add u,v
+
+                // make this the framebuffer we are rendering to.
+                gl.bindFramebuffer(gl.FRAMEBUFFER, t.fbo);
+                // Tell the shader the resolution of the framebuffer.
+                gl.uniform2f(textureSizeLocation, webgl.width, webgl.height);
+                // Tell webgl the viewport setting needed for framebuffer.
+                gl.viewport(0, 0, t.width, t.height);
+                gl.drawArrays(gl.TRIANGLES, 0, 6);
             });
+
+            // Tell the shader the resolution of the screen.
+            gl.uniform2f(textureSizeLocation, webgl.width, webgl.height);
+            // render to the screen
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            // draw rectangle with current texture
             gl.drawArrays(gl.TRIANGLES, 0, 6);
+
             drawingContext.clearRect(0, 0, drawing.width, drawing.height);
             // Draw the rectangle.
             requestAnimationFrame(render);
         }
+        console.log(textures);
         render();
     });
 
