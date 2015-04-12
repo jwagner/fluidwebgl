@@ -1,8 +1,5 @@
-// coordinates in canvas resolution
+// coordinates in 0,1
 attribute vec2 a_position;
-
-// canvas resolution
-uniform vec2 u_resolution;
 
 // coordinate in 0,1 space
 varying vec2 v_texCoord;
@@ -10,7 +7,7 @@ varying vec2 v_texCoord;
 void main() {
 
   // convert the rectangle from pixels to 0.0 to 1.0
-  vec2 zeroToOne = a_position / u_resolution;
+  vec2 zeroToOne = a_position;
 
   // convert from 0->1 to 0->2
   vec2 zeroToTwo = zeroToOne * 2.0;

@@ -1,12 +1,19 @@
 $icon-font-path: '../fonts/';
 
 #webgl {
-    width: 100vw;
-    height: 100vh;
+    /* width: 100vw; */
+    /* height: 100vh; */
     /* background: rgba(255,100,100, 0.9);*/
 }
 #drawing {
+    /* width: 100vw; */
+    /* height: 100vh; */
+    /* background: rgba(255,100,100, 0.9);*/
+}
+
+#drawing {
     /* background: rgba(100, 100, 255, 0.9); */
+    /* display: none; */
 }
 #uv {
     display: none;
