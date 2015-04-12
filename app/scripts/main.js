@@ -1,10 +1,14 @@
 /* jshint devel:true */
 'use strict';
 
-var canvas = document.getElementById('c');
+var webgl = document.getElementById('webgl');
+var uv = document.getElementById('uv');
+var drawing = document.getElementById('drawing');
+var drawingContext = drawing.getContext('2d');
+var textures = [];
 
 // do all the messy work
-var gl = setupWebGL(canvas);
+var gl = setupWebGL(webgl);
 
 // download vertex source
 var vertex = document.getElementById('vertex');
@@ -34,13 +38,15 @@ Promise.all([vertexSource, fragmentSource])
         gl.useProgram(program);
 
         // look up where the vertex data needs to go.
-        var positionLocation = gl.getAttribLocation(program, "a_position");
-        var texCoordLocation = gl.getAttribLocation(program, "a_texCoord");
+        // We're keeping track of 2 locations:
+        // - clipspace { -1, 1 } for the screen
+        // - texture coordinates { 0, 1 } for the texture
 
-        // provide texture coordinates for the rectangle.
-        // TODO: can we use a triangle stripe here?
+        var texCoordLocation = gl.getAttribLocation(program, "a_texCoord");
         var texCoordBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+        gl.enableVertexAttribArray(texCoordLocation);
+        gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
         // two triangles in texture space (0,0) -> (1,1)
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
             0.0,  0.0,
@@ -49,52 +55,19 @@ Promise.all([vertexSource, fragmentSource])
             0.0,  1.0,
             1.0,  0.0,
             1.0,  1.0]), gl.STATIC_DRAW);
-        //
-        gl.enableVertexAttribArray(texCoordLocation);
-        gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
 
-        // create 2 textures
-        var textures = [];
-        for (var ii = 0; ii < 2; ++ii) {
-            var texture = gl.createTexture();
-            gl.bindTexture(gl.TEXTURE_2D, texture);
 
-            // Set the parameters so we can render any size image.
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-            // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-
-            // add the texture to the array of textures.
-            textures.push(texture);
-        }
-
-        // lookup the sampler locations.
-        var u_image0Location = gl.getUniformLocation(program, "u_image0");
-        var u_image1Location = gl.getUniformLocation(program, "u_image1");
-        // set which texture units to render with.
-        gl.uniform1i(u_image0Location, 0);  // texture unit 0
-        gl.uniform1i(u_image1Location, 1);  // texture unit 1
-
-        console.log(textures);
-
-        // lookup uniforms
-        var resolutionLocation = gl.getUniformLocation(program, "u_resolution");
-
-        // set the resolution
-        gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
-
+        // provide texture coordinates for the rectangle.
+        // TODO: can we use a triangle stripe here?
         // Create a buffer for the position of the rectangle corners.
-        var buffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        var positionLocation = gl.getAttribLocation(program, "a_position");
+        var positionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
         gl.enableVertexAttribArray(positionLocation);
         gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
-
         // Set a rectangle the same size as the image.
-        var width = canvas.width;
-        var height = canvas.height;
+        var width = webgl.width;
+        var height = webgl.height;
         var x1 = 0;
         var x2 = 0 + width;
         var y1 = 0;
@@ -106,14 +79,74 @@ Promise.all([vertexSource, fragmentSource])
             x1, y2,
             x2, y1,
             x2, y2]), gl.STATIC_DRAW);
-        var drawing = document.getElementById('draw').getElementsByTagName('canvas')[0];
-        var ctx2d = drawing.getContext('2d');
+
+
+        // lookup uniforms
+        var resolutionLocation = gl.getUniformLocation(program, "u_resolution");
+        // set the resolution
+        gl.uniform2f(resolutionLocation, webgl.width, webgl.height);
+
+        // create name textures
+
+        textures = [
+            {
+                name: 'webgl',
+                clamping: gl.CLAMP_TO_EDGE,
+                interpolation: gl.LINEAR,
+                texture: null,
+                sampler: null,
+                element: webgl
+            },
+            {
+                name: 'drawing',
+                clamping: gl.CLAMP_TO_EDGE,
+                interpolation: gl.LINEAR,
+                texture: null,
+                sampler: null,
+                element: drawing
+            },
+            {
+                name: 'uv',
+                clamping: gl.CLAMP_TO_EDGE,
+                interpolation: gl.LINEAR,
+                texture: null,
+                sampler: null,
+                element: uv
+            }
+        ];
+
+        _.each(textures, function(t, i) {
+            // create a new texture
+            var texture = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+
+            console.log(t, t.clamping, t.interpolation);
+            // Set the parameters so we can render any size image.
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, t.clamping);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, t.clamping);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, t.interpolation);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, t.interpolation);
+
+            // add the texture to the texture info
+            t.texture = texture;
+
+            // lookup the sampler locations.
+            var u_imageLocation = gl.getUniformLocation(program, "u_image" + t.name);
+            // set which texture units to render with.
+            gl.uniform1i(u_imageLocation, i);
+            t.sampler = u_imageLocation;
+            t.id = gl.TEXTURE0 + i;
+        });
+        // show what we have
+        console.log(textures);
+
+
 
         // At init time. Clear the back buffer.
         gl.clearColor(1,1,1,1);
         gl.clear(gl.COLOR_BUFFER_BIT);
 
-        // Turn off rendering to alpha
+        // // Turn off rendering to alpha
         gl.colorMask(true, true, true, false);
 
         function render(){
@@ -121,17 +154,15 @@ Promise.all([vertexSource, fragmentSource])
 
             // todo, add u,v images here...
             // things to upload to textures
-            var canvi = [drawing, canvas];
-
-            for (var ii = 0; ii < 2; ++ii) {
-                gl.activeTexture(gl.TEXTURE0 + ii);
-                gl.bindTexture(gl.TEXTURE_2D, textures[ii]);
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvi[ii]);
+            _.each(textures, function(t, i){
+                gl.activeTexture(t.id);
+                gl.bindTexture(gl.TEXTURE_2D, t.texture);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, t.element);
                 // draw rectangle with current texture
                 // todo, combine textures, add u,v
-                gl.drawArrays(gl.TRIANGLES, 0, 6);
-                ctx2d.clearRect(0, 0, drawing.width, drawing.height);
-            }
+            });
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+            drawingContext.clearRect(0, 0, drawing.width, drawing.height);
             // Draw the rectangle.
             requestAnimationFrame(render);
         }

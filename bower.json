@@ -1,16 +1,17 @@
 {
-    "name": "fluidwebgl",
-    "private": true,
-    "dependencies": {
-        "bootstrap-sass-official": "~3.3.1",
-        "modernizr": "~2.8.1",
-        "fetch": "~0.7.0",
-        "es6-promise": "~2.0.1",
-        "sketch.js": "*"
-    },
-    "overrides": {
-        "sketch.js": {
-            "main": "js/sketch.js"
-        }
+  "name": "fluidwebgl",
+  "private": true,
+  "dependencies": {
+    "bootstrap-sass-official": "~3.3.1",
+    "modernizr": "~2.8.1",
+    "fetch": "~0.7.0",
+    "es6-promise": "~2.0.1",
+    "sketch.js": "*",
+    "lodash": "~3.6.0"
+  },
+  "overrides": {
+    "sketch.js": {
+      "main": "js/sketch.js"
     }
+  }
 }

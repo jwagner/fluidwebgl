@@ -1,8 +1,10 @@
-// var COLOURS = [ '#E3EB64', '#A7EBCA', '#FFFFFF', '#D8EBA7', '#868E80' ];
-var COLOURS = [ '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF'];
+var COLOURS = [ '#E3EB64', '#A7EBCA', '#FFFFFF', '#D8EBA7', '#868E80' ];
+// var COLOURS = [ '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF'];
 var radius = 0;
 Sketch.create({
-    container: document.getElementById('draw'),
+    element: document.getElementById('drawing'),
+    // if you don't pass a container, Sketch wil append the element to the body
+    container: document.getElementById('drawingcontainer'),
     autoclear: false,
     strokeStyle: 'hsla(200, 50%, 50%, .4)',
     globalCompositeOperation: 'lighter',

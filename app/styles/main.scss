@@ -1,19 +1,22 @@
 $icon-font-path: '../fonts/';
 
-#c {
+#webgl {
     width: 100vw;
     height: 100vh;
-    background: rgba(255,100,100, 0.9);
+    /* background: rgba(255,100,100, 0.9);*/
 }
+#drawing {
+    /* background: rgba(100, 100, 255, 0.9); */
+}
+#uv {
+    display: none;
+}
+
 .layer {
     position: absolute;
-
 }
-#draw {
+#drawingcontainer {
     opacity: 0.9;
-}
-#draw canvas {
-    /* background: rgba(100, 100, 255, 0.9); */
 }
 
 // bower:scss

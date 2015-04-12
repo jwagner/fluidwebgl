@@ -33,11 +33,17 @@
 
     <div class="fluid-container">
       <div class="row">
-        <div class="layer ">
-          <canvas id="c" width="1000" height="1000"></canvas>
+        <div class="layer">
+          <img id="uv" src="/images/UV.png" alt="uv" />
         </div>
-        <div id="draw" class="layer "></div>
+        <div class="layer">
+          <canvas id="webgl" width="100" height="100"></canvas>
+        </div>
+        <div class="layer" id="drawingcontainer">
+          <canvas id="drawing" width="1000" height="1000"></canvas>
+        </div>
       </div>
+
     </div>
 
 
@@ -47,6 +53,7 @@
     <script src="/bower_components/fetch/fetch.js"></script>
     <script src="/bower_components/es6-promise/promise.js"></script>
     <script src="/bower_components/sketch.js/js/sketch.js"></script>
+    <script src="/bower_components/lodash/lodash.js"></script>
     <!-- endbower -->
     <!-- endbuild -->
 
