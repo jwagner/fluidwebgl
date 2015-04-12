@@ -9,7 +9,7 @@ var textures = [];
 var render;
 
 // do all the messy work
-var gl = setupWebGL(webgl);
+var gl = setupWebGL(webgl, {preserveDrawingBuffer: true});
 
 // download vertex source
 var vertex = document.getElementById('vertex');
