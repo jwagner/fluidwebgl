@@ -200,6 +200,7 @@ Promise.all([vertexSource, fragmentSource])
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
         // At init time. Clear the back buffer.
+        // gl.clearColor(1.0, 1.0, 1.0, 0.0);
         gl.clear(gl.COLOR_BUFFER_BIT);
 
         // // Turn off rendering to alpha
@@ -231,8 +232,8 @@ Promise.all([vertexSource, fragmentSource])
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, uvTexture.element);
 
             gl.drawArrays(gl.TRIANGLES, 0, 6);
-
             drawingContext.clearRect(0, 0, drawing.width, drawing.height);
+
             // Draw the rectangle.
             requestAnimationFrame(render);
         }

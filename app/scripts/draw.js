@@ -1,4 +1,4 @@
-var COLOURS = [ '#E3EB64', '#A7EBCA', '#FF2244', '#D8EBA7', '#868E80' ];
+var COLOURS = [ '#E3EB64', '#A7EBCA', '#DD2244', '#D8EBA7', '#868E80' ];
 // var COLOURS = [ '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF'];
 // var COLOURS = [ '#FF2244', '#FF2244', '#FF2244', '#FF2244', '#FF2244'];
 var radius = 0;
@@ -24,25 +24,12 @@ Sketch.create({
     // and powering sketches using the touches array is recommended for easy
     // scalability. If you only need to handle the mouse / desktop browsers,
     // use the 0th touch element and you get wider device support for free.
-    // touchmove: function() {
-    //     for ( var i = this.touches.length - 1, touch; i >= 0; i-- ) {
-    //         touch = this.touches[i];
-    //         this.lineCap = 'round';
-    //         this.lineJoin = 'round';
-    //         this.fillStyle = this.strokeStyle = COLOURS[ Math.floor(Math.random() * COLOURS.length) ];
-    //         this.lineWidth = radius;
-    //         this.beginPath();
-    //         this.moveTo( touch.ox, touch.oy );
-    //         this.lineTo( touch.x, touch.y );
-    //         this.stroke();
-    //     }
-    // }
     touchmove: function() {
         for ( var i = this.touches.length - 1, touch; i >= 0; i-- ) {
             touch = this.touches[i];
             this.lineCap = 'round';
             this.lineJoin = 'round';
-            this.fillStyle = this.strokeStyle = 'red';
+            this.fillStyle = this.strokeStyle = 'black';
             this.lineWidth = radius;
             this.beginPath();
             this.moveTo( touch.ox, touch.oy );
@@ -51,6 +38,19 @@ Sketch.create({
             this.fill();
         }
     }
+    // touchmove: function() {
+    //     for ( var i = this.touches.length - 1, touch; i >= 0; i-- ) {
+    //         touch = this.touches[i];
+    //         this.lineCap = 'round';
+    //         this.lineJoin = 'round';
+    //         this.fillStyle = this.strokeStyle = 'red';
+    //         this.lineWidth = radius;
+    //         this.beginPath();
+    //         this.moveTo( touch.ox, touch.oy );
+    //         this.lineTo( touch.x, touch.y );
+    //         this.stroke();
+    //     }
+    // }
     // touchmove: function() {
     //     for ( var i = this.touches.length - 1, touch; i >= 0; i-- ) {
     //         touch = this.touches[i];

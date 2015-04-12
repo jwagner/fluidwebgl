@@ -32,13 +32,15 @@ void main() {
 
   // get advected color from previous texture
   // vec4 colornew = texture2D(u_imagewebgl, v_texCoord - uv/100.0 ) ;
-  vec4 colornew = texture2D(u_imagewebgl, v_texCoord - uv/100.0);
-  //  vec4 colornew = texture2D(u_imagewebgl, v_texCoord - vec2(0.001, 0.0)) ;
+  vec4 colornew = texture2D(u_imagewebgl, v_texCoord - uv/60.0);
 
+  //  vec4 colornew = texture2D(u_imagewebgl, v_texCoord - vec2(0.001, 0.0)) ;
+  // vec4 colornew = texture2D(u_imagewebgl, v_texCoord);
+  // vec4 colornew = gl_FragColor;
   vec4 textureCoordinate = vec4(v_texCoord[0], v_texCoord[1], 0.0, 1.0);
 
   // gl_FragColor = vec4(min(colornew.rgb, colordrawing.rgb), max(colornew[3], colordrawing[3]));
-  gl_FragColor = mix(colornew, colordrawing, colordrawing.a );
+  gl_FragColor = mix(colornew, colordrawing, colordrawing.a);
   gl_FragColor.a = min(gl_FragColor.a, abs(uv).x + abs(uv).y);
   // gl_FragColor = colornew + colordrawing;
 
